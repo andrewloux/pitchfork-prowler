@@ -1,0 +1,45 @@
+<head>
+  <title>Pitchfork Prowler</title>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+  {{> header}}
+  {{> prowl}}
+  {{> searchResults}}    
+</body>
+
+<template name="header">
+	<h1 class="header">p4k prowler</h1>
+</template>
+
+<template name="prowl">
+	<div class="input-group">
+	  	<input id="query" class="form-control" type="text" placeholder="Search for an artist or album" />
+
+	  	<span class="input-group-btn">
+	        <button id="search" class="btn btn-default" type="button">
+	        	<i class="glyphicon glyphicon-search"></i>
+	        </button>
+	     </span>
+	</div>
+</template>
+
+<template name="searchResults">
+	<div id="wait">
+		<i class="fa fa-circle-o-notch fa-spin"></i>
+	</div>
+
+	<ul id="reviewList" class="list-group">
+	</ul>
+
+</template>
