@@ -1,23 +1,25 @@
 if (Meteor.isServer) {
+p4k = "http://pitchfork.com";
 
   Meteor.methods({
       p4kQuery: function(query) {
           this.unblock();
 		console.log("sending query to pitchfork: " + query);
-          return Meteor.http.call("GET", "http://pitchfork.com/search/ac/?query=" + query);
+          return Meteor.http.call("GET", p4k + "/search/ac/?query=" + query);
       }, 
       p4kURL: function(url){
           this.unblock();
 		console.log("calling pitchfork with following url" + url );
-          return Meteor.http.call("GET", "http://pitchfork.com/" + url);
+          return Meteor.http.call("GET", p4k + url);
       },
 	  getBestQuery: function() {
 			console.log("querying for the best shit bro dw i got you");
-			return Meteor.http.call("GET", "http://pitchfork.com/reviews/best/albums/");
+			return Meteor.http.call("GET", p4k + "/reviews/best/albums/");
 	  },
 	  getLatestQuery: function() {
+			this.unblock();
 			console.log("querying for the latest shit dw bro i got you");
-			return Meteor.http.call("GET", "http://pitchfork.com/reviews/albums");
+			return Meteor.http.call("GET", p4k + "/reviews/albums");
 	  }
   });
 }
@@ -61,22 +63,36 @@ if (Meteor.isClient) {
 		});
 		Meteor.call("getLatestQuery", function(error, results){
 				content = results.content;
-				var object_list_container = $("<div id=\"main\">").html(results.content).find('.object-grid')[0];
+				var object_list_container = $('<div id="main">').html(results.content).find('.object-grid')[0];
 				$(object_list_container).children('li').each(function(index){
 					$(this).children('ul').children('li').each(function(index){
 						linkRef = $(this).children('a');
+						//console.log("reference is: ", linkRef.attr('href'));
 						cover = linkRef.children('div.artwork').children('div.lazy').attr('data-content');
 						info = linkRef.children('div.info');
 						upper_title = info.children('h1').text().trim();
 						lower_title = info.children('h2').text().trim();
+						//getting the ratings
+						console.log("ratings for: "+linkRef.attr('href'));
+						
 
 					var album = '<li class="list-group-item">';
 					album += '<div class = "albumArt">'+cover+'</div>';
 					album += '<div class="albumName">' +
 								'<h1>'+upper_title+'</h1>'+
 								'<h2>'+lower_title+'</h2>'+
-							'</div></li>';
-					$('#latestList').append(album);
+							'</div>';
+					Meteor.call("p4kURL", linkRef.attr('href'),  function(error, results){
+							var rating = $('<div id="main">').html(results.content).find('ul.review-meta')
+							//there are nested reviews inside a single review, only fetching the first one for now....
+							.children('li').first()
+							.children('div.info')
+							.children('span.score')
+							.text().trim();
+							album += '<div class="rating '+ getColorScore(rating) + '">'+ rating +'</div></li>';
+							$('#latestList').append(album);
+					});
+					
 				});
 				
 		});
