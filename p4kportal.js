@@ -20,6 +20,10 @@ p4k = "http://pitchfork.com";
 			this.unblock();
 			console.log("querying for the latest shit dw bro i got you");
 			return Meteor.http.call("GET", p4k + "/reviews/albums");
+	  }, 
+	  getSearch: function(query) {
+			console.log("querying for the best shit bro dw i got you");
+			return Meteor.http.call("GET", p4k + "/search/more/?query="+ query +"&filter=album_reviews");
 	  }
   });
 }
@@ -31,10 +35,6 @@ if (Meteor.isClient) {
 		$(".nav li a:first").trigger("click");
 	});
 
-
-	$(document).on('click', '.nav li a:eq(2)', function(){
-		$("#reviewList").empty();
-	});
 
 	Meteor.startup(function (){
 		pages = 2;
@@ -151,27 +151,27 @@ if (Meteor.isClient) {
 
         $("#wait").fadeIn();
 
-        Meteor.call("p4kQuery", searchQuery, function(error, results) {
-			console.log("results of the search is: "+JSON.stringify(results));
-			console.log('errors : '  + JSON.stringify(results));
-          var reviewsObj = _.find(results.data, 
-                                  function(item){
-                                    if (item.label == "Reviews"){
-                                      return item;
-                                    }
-                                  });
-		console.log(reviewsObj);
+        Meteor.call("getSearch", searchQuery, function(error, results) {
 
-		window.revObj = reviewsObj;
+        var searchResults = $(results.content).find(".object-grid ul li");
+
+        window.searchedReviews = [];
+
+        searchResults.each(function(){
+    		window.searchedReviews.push({'url': $(this).find("a").attr('href')});
+		});
 
 		console.log("another call");
 
-          if (reviewsObj.objects.length){
-            _.each(reviewsObj.objects, function(reviewObj) {
+          if (window.searchedReviews.length){
+            _.each(window.searchedReviews, function(reviewObj) {
 				console.log("reviewURL: "+reviewObj.url);
                 var reviewURL = reviewObj.url;
-                window.results = reviewsObj.objects;
+                //window.results = reviewsObj.objects;
                 //Session.set("reviews", reviewsObj.objects);
+
+                // console.log('')
+
                 Meteor.call("p4kURL", reviewURL, function(error, results){
 
                     // IF PITCHFORK CHANGES IT'S LAYOUT, THE FOLLOWING FOUR LINES MAY NOT RETURN WHAT THEY SHOULD..
@@ -180,7 +180,7 @@ if (Meteor.isClient) {
                     var album = $("<div>").html(results.content).find(".score").parent().find("h2").text();
                     var albumArt = $("<div>").html(results.content).find("#main .artwork img").attr('src');
                      
-                    var shallowCopy = _.find(window.results, function(item){
+                    var shallowCopy = _.find(window.searchedReviews, function(item){
                       if (item.url == reviewURL){
                         return item;
                       }
@@ -235,8 +235,8 @@ Template.navigation.events({
 
 function populateList(){
 
-    for (var i = 0; i < window.results.length; i++){
-      if (window.results[i].albumArt == undefined){
+    for (var i = 0; i < window.searchedReviews.length; i++){
+      if (window.searchedReviews[i].albumArt == undefined){
         return;
       }
     }
@@ -245,7 +245,7 @@ function populateList(){
       $("#reviewList li").fadeOut().remove();
 
     // The above makes sure ALL our GETS have been done. 
-    _.each(window.results, function(obj){
+    _.each(window.searchedReviews, function(obj){
       //Inserting each object.
 
       console.log(obj);
