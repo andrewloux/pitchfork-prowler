@@ -12,9 +12,9 @@ p4k = "http://pitchfork.com";
 		console.log("calling pitchfork with following url" + url );
           return Meteor.http.call("GET", p4k + url);
       },
-	  getBestQuery: function() {
+	  getBestQuery: function(pagenum) {
 			console.log("querying for the best shit bro dw i got you");
-			return Meteor.http.call("GET", p4k + "/reviews/best/albums/");
+			return Meteor.http.call("GET", p4k + "/reviews/best/albums/" + pagenum);
 	  },
 	  getLatestQuery: function() {
 			this.unblock();
@@ -28,39 +28,40 @@ if (Meteor.isClient) {
 
 
 	Meteor.startup(function (){
+		pages = 2;
 		//populate the best bar and the latest bar
-		Meteor.call("getBestQuery", function(error, results){
-			//clear ul
-			$('#bestList').empty();
-			content = results.content;
-			var object_list_container = $("<div id=\"main\">").html(results.content).find(".object-list, .bnm-list")[0];
+		$('#bestList').empty();
+		for (page=1;page<=pages;page++)	{
+			console.log("page number: " + page );
+			
+			Meteor.call("getBestQuery", page, function(error, results){
+				content = results.content;
+				var object_list_container = $("<div id=\"main\">").html(results.content).find(".object-list, .bnm-list")[0];
 
-			$(object_list_container).children('li').each(function(index){
-					cover = $(this).children('a').children('div.artwork').children('div.lazy').attr('data-content');
-					console.log(cover);
-					info = $(this).children('div.info');
-					titles = info.children('a');
-					upper_title = titles.children('h1').text().trim();
-					lower_title = titles.children('h2').text().trim();
-					rating = parseFloat(info.children('span.score').text().trim());
+				$(object_list_container).children('li').each(function(index){
+						cover = $(this).children('a').children('div.artwork').children('div.lazy').attr('data-content');
+						console.log(cover);
+						info = $(this).children('div.info');
+						titles = info.children('a');
+						upper_title = titles.children('h1').text().trim();
+						lower_title = titles.children('h2').text().trim();
+						rating = parseFloat(info.children('span.score').text().trim());
 
-					var album = '<li class="list-group-item">';
-					album += '<div class = "albumArt">'+cover+'</div>';
-					//var album = '<li class="list-group-item"><div class="albumArt" style="background-image:url(\''+  +'\')"></div>';
-					album+= '<div class="albumName">' +
-								'<h1>'+upper_title+'</h1>'+
-								'<h2>'+lower_title+'</h2>'+
-							'</div>';
-					album+= '<div class="rating '+ getColorScore(rating) +'">'+ rating +'</div></li>';
-					$('#bestList').append(album);
+						var album = '<li class="list-group-item">';
+						album += '<div class = "albumArt">'+cover+'</div>';
+						album+= '<div class="albumName">' +
+									'<h1>'+upper_title+'</h1>'+
+									'<h2>'+lower_title+'</h2>'+
+								'</div>';
+						album+= '<div class="rating '+ getColorScore(rating) +'">'+ rating +'</div>'; 
+						console.log("appending: " + album);
+						$('#bestList').append(album);
 
 					
+				});	
 			});
+		}
 
-			
-			//console.log(list);
-			
-		});
 		Meteor.call("getLatestQuery", function(error, results){
 				content = results.content;
 				var object_list_container = $('<div id="main">').html(results.content).find('.object-grid')[0];
@@ -89,7 +90,7 @@ if (Meteor.isClient) {
 							.children('div.info')
 							.children('span.score')
 							.text().trim();
-							album += '<div class="rating '+ getColorScore(rating) + '">'+ rating +'</div></li>';
+							album += '<div class="rating '+ getColorScore(parseFloat(rating)) + '">'+ rating +'</div></li>';
 							$('#latestList').append(album);
 					});
 					
@@ -233,7 +234,7 @@ function getColorScore(score){
       else if (score < 9){
         return "great";
       }
-      else if (obj.score > 9){
-        return "perfect"
+      else if (score > 9){
+        return "perfect";
       }
 }
