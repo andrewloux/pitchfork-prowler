@@ -26,6 +26,15 @@ p4k = "http://pitchfork.com";
 
 if (Meteor.isClient) {
 
+	$(document).ready(function(){
+		// Making Latest the active list!
+		$(".nav li a:first").trigger("click");
+	});
+
+
+	$(document).on('click', '.nav li a:eq(2)', function(){
+		$("#reviewList").empty();
+	});
 
 	Meteor.startup(function (){
 		pages = 2;
@@ -36,11 +45,19 @@ if (Meteor.isClient) {
 			
 			Meteor.call("getBestQuery", page, function(error, results){
 				content = results.content;
+
+				console.log('coneent is as follows');
+				console.log(content);
+				window.butt = content;
+
 				var object_list_container = $("<div id=\"main\">").html(results.content).find(".object-list, .bnm-list")[0];
 
 				$(object_list_container).children('li').each(function(index){
 						cover = $(this).children('a').children('div.artwork').children('div.lazy').attr('data-content');
-						console.log(cover);
+
+						cover = $(cover).attr('src');
+
+						var reviewLink = 'http://www.pitchfork.com' + $(this).children("a").attr('href');
 						info = $(this).children('div.info');
 						titles = info.children('a');
 						upper_title = titles.children('h1').text().trim();
@@ -48,12 +65,13 @@ if (Meteor.isClient) {
 						rating = parseFloat(info.children('span.score').text().trim());
 
 						var album = '<li class="list-group-item">';
-						album += '<div class = "albumArt">'+cover+'</div>';
-						album+= '<div class="albumName">' +
-									'<h1>'+upper_title+'</h1>'+
-									'<h2>'+lower_title+'</h2>'+
-								'</div>';
-						album+= '<div class="rating '+ getColorScore(rating) +'">'+ rating +'</div>'; 
+
+				    	//  <div class="albumArt" style="background-image:url('http://cdn4.pitchfork.com/albums/17682/homepage_large.947876a0.jpg')"></div>
+
+						album += '<a href="'+ reviewLink +'"><div class = "albumArt" style="background-image:url(\''+ cover +'\')"></div>';
+						album += '<div class="albumArtist">' + upper_title + '</div>';
+						album += '<div class="albumName">' + lower_title + '</div>';
+						album+= '<div class="rating '+ getColorScore(rating) +'">'+ rating +'</div></a>'; 
 						console.log("appending: " + album);
 						$('#bestList').append(album);
 
@@ -70,19 +88,26 @@ if (Meteor.isClient) {
 						linkRef = $(this).children('a');
 						//console.log("reference is: ", linkRef.attr('href'));
 						cover = linkRef.children('div.artwork').children('div.lazy').attr('data-content');
+						cover = $(cover).attr('src');
+
 						info = linkRef.children('div.info');
+						var reviewLink = 'http://www.pitchfork.com' + $(this).children('a').attr('href');
 						upper_title = info.children('h1').text().trim();
 						lower_title = info.children('h2').text().trim();
 						//getting the ratings
 						console.log("ratings for: "+linkRef.attr('href'));
 						
 
-					var album = '<li class="list-group-item">';
-					album += '<div class = "albumArt">'+cover+'</div>';
-					album += '<div class="albumName">' +
-								'<h1>'+upper_title+'</h1>'+
-								'<h2>'+lower_title+'</h2>'+
-							'</div>';
+					var album = '<li class="list-group-item"><a href="'+ reviewLink +'">';
+					album += '<div class = "albumArt" style="background-image:url(\''+ cover +'\')"></div>';
+					album += '<div class="albumArtist">' + upper_title + '</div>';
+					album += '<div class="albumName">' + lower_title + '</div>';
+
+					// album += '<div class="albumName">' +
+					// 			'<h1>'+upper_title+'</h1>'+
+					// 			'<h2>'+lower_title+'</h2>'+
+					// 		'</div>';
+
 					Meteor.call("p4kURL", linkRef.attr('href'),  function(error, results){
 							var rating = $('<div id="main">').html(results.content).find('ul.review-meta')
 							//there are nested reviews inside a single review, only fetching the first one for now....
@@ -90,7 +115,7 @@ if (Meteor.isClient) {
 							.children('div.info')
 							.children('span.score')
 							.text().trim();
-							album += '<div class="rating '+ getColorScore(parseFloat(rating)) + '">'+ rating +'</div></li>';
+							album += '<div class="rating '+ getColorScore(parseFloat(rating)) + '">'+ rating +'</div></a></li>';
 							$('#latestList').append(album);
 					});
 					
@@ -106,15 +131,29 @@ if (Meteor.isClient) {
   window.results; 
 
   Template.prowl.events({
-    'click #search': function () {
+    'keypress #query, click #search': function (e) {
+
+
+    	if (e.which == 13 || e.which == 1){
+
+    	// Go into search mode if you're not there already
+    	if ($("li.active a").attr('id') != "SEARCH"){
+    		$(".nav li a:last").trigger("click");
+    	}
+		
+		$("#reviewList").empty();
+    	
+    	$("#warning").hide();
 
         var searchQuery = $("#query").val();
+
 		console.log("query is: " + searchQuery);
 
         $("#wait").fadeIn();
 
         Meteor.call("p4kQuery", searchQuery, function(error, results) {
-			console.log("results of the search is: "+results);
+			console.log("results of the search is: "+JSON.stringify(results));
+			console.log('errors : '  + JSON.stringify(results));
           var reviewsObj = _.find(results.data, 
                                   function(item){
                                     if (item.label == "Reviews"){
@@ -122,6 +161,9 @@ if (Meteor.isClient) {
                                     }
                                   });
 		console.log(reviewsObj);
+
+		window.revObj = reviewsObj;
+
 		console.log("another call");
 
           if (reviewsObj.objects.length){
@@ -153,10 +195,16 @@ if (Meteor.isClient) {
                 });
               });
 
+            console.log("Instead I'm in here!");
+
+
           }
           else{
             // Alert the user that this is an empty search!
-			alert("bitch this is an empty search!");
+
+            console.log("YOu should be in here!");
+
+			$("#warning").fadeIn();
 			$("#wait").fadeOut();
           }
 
@@ -164,7 +212,7 @@ if (Meteor.isClient) {
         });
 
 
-        // 
+        }// 
     }
 
   });
@@ -174,6 +222,10 @@ Template.navigation.events({
 		console.log(event.target.id);
 		event.preventDefault();
 		//$('#collector a[href="#'+event.target.id+'"]').tab('show');	
+
+		// Hide the warning
+		$("#warning").hide();
+
 		$(".tab-pane").hide();
   		$("#"+event.target.id+".tab-pane").show();
 	}
@@ -208,14 +260,14 @@ function populateList(){
       // var artistName = (obj.name.split("-")[0].trim()? obj.name.split("-")[0].trim() : obj.artist);
       // var albumName = (obj.name.split("-")[1].trim()? obj.name.split("-")[1].trim() : obj.album);
 
-      var album = '<li class="list-group-item"><div class="albumArt" style="background-image:url(\''+ obj.albumArt +'\')"></div>';
+      var album = '<li class="list-group-item"><a href="http://pitchfork.com'+ obj.url +'"><div class="albumArt" style="background-image:url(\''+ obj.albumArt +'\')"></div>';
       album+= '<div class="albumArtist">'+ obj.artist +'</div>';
       album+= '<div class="albumName">'+ obj.album +'</div>';
-      album+= '<div class="rating '+ getColorScore(obj.score) +'">'+ obj.score +'</div></li>';
+      album+= '<div class="rating '+ getColorScore(obj.score) +'">'+ obj.score +'</div></a></li>';
       
       // Clear out the list.
 	console.log("appending");
-      var list = $("#reviewList").append(album);
+	var list = $("#reviewList").append(album);
 	console.log(list);
   });
 

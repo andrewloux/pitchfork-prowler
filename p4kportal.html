@@ -42,24 +42,26 @@
 	</div>
 </template>
 
-<template name="searchResults">
-	<ul id="reviewList" class="list-group">
-	</ul>
-</template>
 
 <template name="navigation">
+
+	<div id="warning">
+		Your search yielded no results, try again!
+	</div>
+
 	<div id="wait">
 		<i class="fa fa-circle-o-notch fa-spin"></i>
 	</div>
+
 	<ul class="nav nav-tabs" id="collector" role="tablist">
 		<li>
-			<a href="#LATEST" data-toggle="tab" id="LATEST">LATEST</a>
+			<a href="#BEST" role="tab" data-toggle="tab" id="BEST">Best New Music</a>
+		</li>		
+		<li>
+			<a href="#LATEST" data-toggle="tab" id="LATEST">Latest</a>
 		</li>
 		<li>
-			<a href="#BEST" role="tab" data-toggle="tab" id="BEST">BEST</a>
-		</li>
-		<li>
-			<a href="#SEARCH" role="tab" data-toggle="tab" id="SEARCH">SEARCH</a>
+			<a href="#SEARCH" role="tab" data-toggle="tab" id="SEARCH">Search</a>
 		</li>
 	</ul>
 	<div id="TabContent" class="tab-content">
@@ -72,7 +74,8 @@
 			</ul>
 		</div>
 		<div class="tab-pane" id="SEARCH">
-			{{> searchResults }}
+			<ul id="reviewList" class="list-group">
+			</ul>
 		</div>
 	</div>
 </template>

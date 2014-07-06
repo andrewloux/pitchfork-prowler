@@ -15,11 +15,15 @@ body {
 	background-color: black !important;
 }
 
+.nav li a{
+	color: #FD5858;
+}
+
 #header{
 	text-align: center;
 	font-family: "VanadineRegular";
 	font-size:7em;
-	color: white;
+	color: #FD5858;
 	letter-spacing: -7px;
 }
 
@@ -48,6 +52,7 @@ body {
 #wait{
 	font-size: 45px;
 	z-index:5;
+	color:#FD5858;
 	margin-top: 120px;
 	position: absolute;
 	text-align: center;
@@ -55,7 +60,23 @@ body {
 	display:none;
 }
 
-#reviewList{
+#warning{
+	color: white;
+	position: absolute;
+	top: 45%;
+	left: 0;
+	right: 0;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+	width: 400px;
+	font-family: "Helvetica", sans-serif;
+	font-weight: bold;
+	font-size: 2.5em;
+	display:none;
+}
+
+#latestList, #bestList, #reviewList{
 	width:80%;
 	min-width:455px;
 	position: relative;
@@ -64,7 +85,7 @@ body {
 	margin-top:40px;
 }
 
-#reviewList li{
+#latestList li, #bestList li, #reviewList li{
 	height:125px;
 }
 
@@ -73,6 +94,24 @@ body {
 }
 .list-group-item:hover {
 	-webkit-transform: scale(1.05);
+}
+
+.list-group-item a{
+	display: inline-block;
+	width: 100%;
+	height: 100%;
+	z-index: 500;
+	/*color: #033F74;*/
+	color: black;
+	text-decoration: none !important;	
+	-webkit-transition: color 0.5s ease-in-out;
+	-moz-transition: color 0.5s ease-in-out;
+	-o-transition: color 0.5s ease-in-out;
+	transition: color 0.5s ease-in-out;
+}
+
+.list-group-item a:hover{
+	color: #FD5858;
 }
 
 .albumArt{
