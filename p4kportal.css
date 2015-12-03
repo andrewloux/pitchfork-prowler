@@ -74,7 +74,6 @@ body {
 	font-family: "Helvetica", sans-serif;
 	font-weight: bold;
 	font-size: 2.5em;
-	display:none;
 }
 
 #latestList, #bestList, #reviewList{

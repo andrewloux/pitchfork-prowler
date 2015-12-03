@@ -1,31 +1,30 @@
 if (Meteor.isServer) {
-p4k = "http://pitchfork.com";
+	p4k = "http://pitchfork.com";
 
-  Meteor.methods({
-      p4kQuery: function(query) {
-          this.unblock();
-		console.log("sending query to pitchfork: " + query);
-          return Meteor.http.call("GET", p4k + "/search/ac/?query=" + query);
-      }, 
-      p4kURL: function(url){
-          this.unblock();
-		console.log("calling pitchfork with following url" + url );
-          return Meteor.http.call("GET", p4k + url);
-      },
+	Meteor.methods({
+	  p4kQuery: function(query) {
+	      this.unblock();
+		// console.log("sending query to pitchfork: " + query);
+	      return Meteor.http.call("GET", p4k + "/search/ac/?query=" + query);
+	  }, 
+	  p4kURL: function(url){
+	      this.unblock();
+		// console.log("calling pitchfork with following url" + url );
+	      return Meteor.http.call("GET", p4k + url);
+	  },
 	  getBestQuery: function(pagenum) {
-			console.log("querying for the best shit bro dw i got you");
+			// console.log("querying for the best shit bro dw i got you");
 			return Meteor.http.call("GET", p4k + "/reviews/best/albums/" + pagenum);
 	  },
 	  getLatestQuery: function() {
 			this.unblock();
-			console.log("querying for the latest shit dw bro i got you");
 			return Meteor.http.call("GET", p4k + "/reviews/albums");
 	  }, 
 	  getSearch: function(query) {
-			console.log("querying for the best shit bro dw i got you");
+			// console.log("querying for the best shit bro dw i got you");
 			return Meteor.http.call("GET", p4k + "/search/more/?query="+ query +"&filter=album_reviews");
 	  }
-  });
+	});
 }
 
 if (Meteor.isClient) {
@@ -44,11 +43,10 @@ if (Meteor.isClient) {
 			console.log("page number: " + page );
 			
 			Meteor.call("getBestQuery", page, function(error, results){
+				$("#wait").fadeOut();
 				content = results.content;
 
 				console.log('coneent is as follows');
-				console.log(content);
-				window.butt = content;
 
 				var object_list_container = $("<div id=\"main\">").html(results.content).find(".object-list, .bnm-list")[0];
 
@@ -203,8 +201,7 @@ if (Meteor.isClient) {
             // Alert the user that this is an empty search!
 
             console.log("YOu should be in here!");
-
-			$("#warning").fadeIn();
+			$("#warning").text("Your search yielded no results, try again!").fadeIn();
 			$("#wait").fadeOut();
           }
 
@@ -224,7 +221,12 @@ Template.navigation.events({
 		//$('#collector a[href="#'+event.target.id+'"]').tab('show');	
 
 		// Hide the warning
-		$("#warning").hide();
+		// $("#warning").hide();
+
+		if (event.target.id == 'SEARCH')
+			$("#warning").show()
+		else
+			$("#warning").hide();
 
 		$(".tab-pane").hide();
   		$("#"+event.target.id+".tab-pane").show();
